@@ -1,16 +1,32 @@
 local WoW = LibStub:NewLibrary("WoW", 1)
 
 function WoW.CastSpell(spellName)
-    if UnitExists("Target") then 
+    if UnitExists("Target") and not IsHackEnabled("AlwaysFacing") then				
 		FaceDirection(GetAnglesBetweenObjects("Player", "Target"), true);	
 	end;	
-	WoW.Log('Casting: ' .. spellName);
+	c = WoW.ClassColors[select(3,UnitClass("player"))]	
+	WoW.Log(c.hex .. 'Casting: |r' .. spellName);
 	if UnitExists("Target") then 
 		CastSpellByName(spellName, "Target");
 	else
 		CastSpellByName(spellName, "");
 	end;	
 end
+
+WoW.ClassColors = {
+	[1]				= {class = "Warrior", 		B=0.43,	G=0.61,	R=0.78,	hex="|cffc79c6e"},
+	[2]				= {class = "Paladin", 		B=0.73,	G=0.55,	R=0.96,	hex="|cfff58cba"},
+	[3]				= {class = "Hunter",		B=0.45,	G=0.83,	R=0.67,	hex="|cffabd473"},
+	[4]				= {class = "Rogue",			B=0.41,	G=0.96,	R=1,	hex="|cfffff569"},
+	[5]				= {class = "Priest",		B=1,	G=1,	R=1,	hex="|cffffffff"},
+	[6]				= {class = "Deathknight",	B=0.23,	G=0.12,	R=0.77,	hex="|cffc41f3b"},
+	[7]				= {class = "Shaman",		B=0.87,	G=0.44,	R=0,	hex="|cff0070de"},
+	[8]				= {class = "Mage",			B=0.94,	G=0.8,	R=0.41,	hex="|cff69ccf0"},
+	[9]				= {class = "Warlock", 		B=0.79,	G=0.51,	R=0.58,	hex="|cff9482c9"},
+	[10]			= {class = "Monk",			B=0.59,	G=1,	R=0,	hex="|cff00ff96"},
+	[11]			= {class = "Druid", 		B=0.04,	G=0.49,	R=1,	hex="|cffff7d0a"},
+	[12] 			= {class = "Demonhunter", 	B=0.79, G=0.19, R=0.64, hex="|cffa330c9"},
+}
 
 function WoW.CanCast(spellName, range, requiresTarget)
 	if requiresTarget then	
@@ -36,9 +52,11 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	if UnitIsDeadOrGhost("Player") then 
 		return false;
 	end;
-	if UnitMovementFlags("Player") ~= 0 and select(4, GetSpellInfo(spellName)) ~= 0 then -- If the player is moving and not trying to cast an instant cast spell
-		return false;
-	end;
+	if not IsHackEnabled("MovingCast") then
+		if UnitMovementFlags("Player") ~= 0 and select(4, GetSpellInfo(spellName)) ~= 0 then -- If the player is moving and not trying to cast an instant cast spell
+			return false;
+		end;		
+	end;	
 	if not IsUsableSpell(spellName) then
 		return false;
 	end;

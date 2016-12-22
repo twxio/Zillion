@@ -12,6 +12,8 @@ local tick = 0;
 local WoW = LibStub("WoW")
 
 function start()	
+	c = WoW.ClassColors[select(3,UnitClass("player"))]
+	parent.t:SetColorTexture(c.R, c.G, c.B, 1)	
 	LibDraw.Enable(0.005)
 end
 
@@ -65,18 +67,26 @@ function Pulse()
 		return;
 	end
 
+	if not UnitExists("Target") then 		
+		PetStopAttack()		
+		return;
+	end	
+	
 	if not UnitCanAttack("Player", "Target") then 
-		return;
-	end
-
-	if not WoW.InCombat() then
-		return;
+		return;	
 	end
 	
-	-- Do InCombat Stuff
+	if not WoW.InCombat() then		
+		return;		
+	end
 	
-	if UnitCanAttack("Pet", "Target") then 
+	-- Do InCombat Stuff	
+	
+	if UnitCanAttack("Pet", "Target") and UnitExists("Target") then 
 		PetAttack("target")
+	else
+		PetStopAttack()		
+		return;
 	end	
 		
 	local enemiesInMeleeRangeOfTarget = WoW.EnemyUnitsInRangeXofTarget(8)
@@ -92,6 +102,10 @@ function Pulse()
 	end;	
 	
 	-- Rotation Stuff 
+	if WoW.CanCast("Icy Veins", 40, true) then
+		WoW.CastSpell("Icy Veins");
+		return;
+	end		
 	if WoW.CanCast("Ray of Frost", 40, true) then
 		WoW.CastSpell("Ray of Frost");
 		return;

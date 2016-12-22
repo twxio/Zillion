@@ -1,5 +1,5 @@
 local parent = CreateFrame("frame", "Recount", UIParent)
-parent:SetSize(10, 10);  -- Width, Height
+parent:SetSize(1, 1);  -- Width, Height
 parent:SetPoint("TOPLEFT", 0, 0)
 parent:RegisterEvent("ADDON_LOADED")
 parent.t = parent:CreateTexture()
@@ -39,11 +39,20 @@ function start()
 		WoW.Log('Please load Zillions requirements first...', "|cfff00000");
 		return; 
 	end;
-			
+				
 	WoW.Log('Zillion Loaded.')
 	
+	if not IsHackEnabled("NoAutoAway") then				
+		SetHackEnabled("NoAutoAway", true)		
+	end
+	
+	if not IsHackEnabled("AlwaysFacing") then				
+		SetHackEnabled("AlwaysFacing", true)		
+	end
+	
 	local PlayerClass, englishClass, classIndex = UnitClass("Player");
-	WoW.Log('Player Class ' .. englishClass)
+	c = WoW.ClassColors[classIndex]	
+	WoW.Log('Player Class ' .. c.hex .. englishClass .. '|r')
 	if (englishClass == "MAGE") then
 		LoadFile("Classes\\Mage\\Frost.lua")
 	end	
