@@ -51,12 +51,14 @@ function start()
 	end
 	
 	local PlayerClass, englishClass, classIndex = UnitClass("Player");
+	local currentSpec = GetSpecialization()
+		
 	c = WoW.ClassColors[classIndex]	
-	WoW.Log('Player Class ' .. c.hex .. englishClass .. '|r')
-	if (englishClass == "MAGE") then
+	WoW.Log('Player Class ' .. c.hex .. englishClass .. '|r spec = ' .. currentSpec)
+	if englishClass == "MAGE" and currentSpec == 3 then
 		LoadFile("Classes\\Mage\\Frost.lua")
 	end	
-	if (englishClass == "PRIEST") then
+	if englishClass == "PRIEST" and currentSpec == 1 then
 		LoadFile("Classes\\Priest\\Disc.lua")
 	end	
 end
