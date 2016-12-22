@@ -13,9 +13,6 @@ local WoW = LibStub("WoW")
 
 function start()	
 	LibDraw.Enable(0.005)
-	
-	local PlayerClass, englishClass, classIndex = UnitClass("Player");
-	WoW.Log('Player Class ' .. englishClass .. 'loaded.')
 end
 
 function update(self, elapsed)
@@ -125,14 +122,5 @@ function Pulse()
 	end;
 end
 
-local function eventHandler(self, event, ...)
-	local arg1 = ...
-	if event == "ADDON_LOADED" then
-		if (arg1 == "Zillion") then
-			start()            
-		end
-	end
-	print(event)
-end	
-parent:SetScript("OnEvent", eventHandler)
 parent:SetScript("OnUpdate", update)
+start()
