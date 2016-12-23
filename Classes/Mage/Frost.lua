@@ -101,7 +101,11 @@ function Pulse()
 		return;
 	end;	
 	
-	-- Rotation Stuff 
+	-- Rotation Stuff 	
+	if WoW.CanCast("Ebonbolt", 40, true) then
+		WoW.CastSpell("Ebonbolt");
+		return;
+	end		
 	if WoW.CanCast("Icy Veins", 40, true) then
 		WoW.CastSpell("Icy Veins");
 		return;
