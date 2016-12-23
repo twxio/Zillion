@@ -1,14 +1,42 @@
 local parent = CreateFrame("frame", "Recount", UIParent)
-parent:SetSize(10, 10);  -- Width, Height
+parent:SetSize(0, 0);  -- Width, Height
 parent:SetPoint("TOPLEFT", 0, 0)
 parent:RegisterEvent("ADDON_LOADED")
 parent.t = parent:CreateTexture()
-parent.t:SetColorTexture(0, 1, 0, 1)
 parent.t:SetAllPoints(parent)
+
+local button = CreateFrame("Button", nil, UIParent)
+button:SetPoint("TOP", UIParent, "TOP", 0, 0)
+button:SetWidth(85)
+button:SetHeight(25)
+
+button:SetText("DPS Test")
+button:SetNormalFontObject("GameFontNormal")
+
+local ntex = button:CreateTexture()
+ntex:SetTexture("Interface/Buttons/UI-Panel-Button-Up")
+ntex:SetTexCoord(0, 0.625, 0, 0.6875)
+ntex:SetAllPoints()	
+button:SetNormalTexture(ntex)
+
+local htex = button:CreateTexture()
+htex:SetTexture("Interface/Buttons/UI-Panel-Button-Highlight")
+htex:SetTexCoord(0, 0.625, 0, 0.6875)
+htex:SetAllPoints()
+button:SetHighlightTexture(htex)
+
+local ptex = button:CreateTexture()
+ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
+ptex:SetTexCoord(0, 0.625, 0, 0.6875)
+ptex:SetAllPoints()
+button:SetPushedTexture(ptex)
 
 local LibDraw = LibStub("LibDraw-1.0")
 
+local clicked = false;
+
 local tick = 0;
+local inCombatTime = 0;
 local WoW = LibStub("WoW")
 
 function start()	
@@ -19,7 +47,8 @@ end
 
 function update(self, elapsed)
 	tick = tick + elapsed	
-	if tick >= .50 then
+	inCombatTime = inCombatTime + elapsed
+	if tick >= .250 then
 		Pulse()
 		tick = 0
 	end
@@ -42,6 +71,10 @@ function Pulse()
 		return;
 	end
 	
+	if not WoW.InCombat() then		
+		inCombatTime = 0;		
+	end	
+	
 	-- Do out of combat stuff
 
 	if WoW.PlayerHasBuff("Ice Block") then
@@ -58,14 +91,14 @@ function Pulse()
 		end
 	end
 	
---	if WoW.PlayerBuffRemainingTime("Ice Barrier") < 20 then
---		start, duration, enabled = GetSpellCooldown("Ice Barrier")
---		if duration ~= 0 then 
---			return;
---		end
---		WoW.CastSpell("Ice Barrier")
---		return;
---	end
+	if WoW.PlayerBuffRemainingTime("Ice Barrier") < 20 then
+		start, duration, enabled = GetSpellCooldown("Ice Barrier")
+		if duration ~= 0 then 
+			return;
+		end
+		WoW.CastSpell("Ice Barrier")
+		return;
+	end
 
 	if not UnitExists("Target") then 		
 		PetStopAttack()		
@@ -75,12 +108,23 @@ function Pulse()
 	if not UnitCanAttack("Player", "Target") then 
 		return;	
 	end
-	
+
 	if not WoW.InCombat() then		
+		inCombatTime = 0;
 		return;		
-	end
-	
+	end	
+		
 	-- Do InCombat Stuff	
+	local x = math.floor(inCombatTime)	
+	button:SetText('Timer: ' .. x)
+	if x >= 5 * 60 and clicked then	-- 5 mins DPS testing	
+		PetStopAttack()	
+		ClearTarget()
+		WoW.Log("DPS Testing has completed.")
+		button:SetText('DPS Test')		
+		clicked = false;
+		return;
+	end
 	
 	if UnitCanAttack("Pet", "Target") and UnitExists("Target") then 
 		PetAttack("target")
@@ -99,9 +143,13 @@ function Pulse()
 	if WoW.GetHealth("Player") < 20 and WoW.SpellCharges("Ice Block") > 0 and WoW.CanCast("Ice Block", 0, false) then
 		WoW.CastSpell("Ice Block");
 		return;
-	end;	
-	
+	end;
+
 	-- Rotation Stuff 	
+	if WoW.CanCast("Mirror Image", 40, true) then
+		WoW.CastSpell("Mirror Image");
+		return;
+	end		
 	if WoW.CanCast("Ebonbolt", 40, true) then
 		WoW.CastSpell("Ebonbolt");
 		return;
@@ -142,3 +190,14 @@ end
 
 parent:SetScript("OnUpdate", update)
 start()
+
+button:RegisterForClicks("AnyUp", "AnyDown")
+
+function Click()
+	clicked = true;
+	WoW.Log('DPS Test Started...');
+	TargetNearestEnemy()
+	WoW.CastSpell("Ice Lance");
+end
+
+button:SetScript("OnClick", Click)

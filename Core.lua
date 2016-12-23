@@ -1,10 +1,36 @@
 local parent = CreateFrame("frame", "Recount", UIParent)
-parent:SetSize(1, 1);  -- Width, Height
+parent:SetSize(0, 0);  -- Width, Height
 parent:SetPoint("TOPLEFT", 0, 0)
 parent:RegisterEvent("ADDON_LOADED")
 parent.t = parent:CreateTexture()
 parent.t:SetColorTexture(0, 1, 0, 1)
 parent.t:SetAllPoints(parent)
+
+local button = CreateFrame("Button", nil, UIParent)
+button:SetPoint("TOP", UIParent, "TOP", 0, 0)
+button:SetWidth(150)
+button:SetHeight(25)
+
+button:SetText("Reload for FireHack")
+button:SetNormalFontObject("GameFontNormal")
+
+local ntex = button:CreateTexture()
+ntex:SetTexture("Interface/Buttons/UI-Panel-Button-Up")
+ntex:SetTexCoord(0, 0.625, 0, 0.6875)
+ntex:SetAllPoints()	
+button:SetNormalTexture(ntex)
+
+local htex = button:CreateTexture()
+htex:SetTexture("Interface/Buttons/UI-Panel-Button-Highlight")
+htex:SetTexCoord(0, 0.625, 0, 0.6875)
+htex:SetAllPoints()
+button:SetHighlightTexture(htex)
+
+local ptex = button:CreateTexture()
+ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
+ptex:SetTexCoord(0, 0.625, 0, 0.6875)
+ptex:SetAllPoints()
+button:SetPushedTexture(ptex)
 
 local WoW = LibStub("WoW")
 
@@ -35,10 +61,11 @@ function LoadFile(FilePath,LoadMsg)
 end
 
 function start()
-	if not IsHackEnabled then 
-		WoW.Log('Please load Zillions requirements first...', "|cfff00000");
+	if not IsHackEnabled then 		
 		return; 
 	end;
+	
+	button:Hide()
 				
 	WoW.Log('Zillion Loaded.')
 	
@@ -73,3 +100,12 @@ local function eventHandler(self, event, ...)
 end	
 parent:SetScript("OnEvent", eventHandler)
 parent:SetScript("OnUpdate", update)
+
+
+button:RegisterForClicks("AnyUp", "AnyDown")
+
+function down()			
+	ReloadUI()
+end
+
+button:SetScript("OnClick", down)

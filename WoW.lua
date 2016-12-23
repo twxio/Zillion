@@ -1,13 +1,15 @@
 local WoW = LibStub:NewLibrary("WoW", 1)
 
-local cooldownLeft = 0
+local latencyTolerance = 0 
 
 function WoW.CastSpell(spellName)
+	latencyTolerance = select(4,GetNetStats()) / 1000 
+
     if UnitExists("Target") and not IsHackEnabled("AlwaysFacing") then				
 		FaceDirection(GetAnglesBetweenObjects("Player", "Target"), true);	
 	end;	
 	c = WoW.ClassColors[select(3,UnitClass("player"))]	
-	WoW.Log(c.hex .. 'Casting: |r' .. spellName .. ' ' .. cooldownLeft);
+	WoW.Log(c.hex .. 'Casting: |r' .. spellName .. ' [latency]: ' .. (latencyTolerance * 1000) .. 'ms');
 	if UnitExists("Target") then 
 		CastSpellByName(spellName, "Target");
 	else
@@ -29,8 +31,6 @@ WoW.ClassColors = {
 	[11]			= {class = "Druid", 		B=0.04,	G=0.49,	R=1,	hex="|cffff7d0a"},
 	[12] 			= {class = "Demonhunter", 	B=0.79, G=0.19, R=0.64, hex="|cffa330c9"},
 }
-
-local latencyTolerance = select(4,GetNetStats()) / 100
 
 function WoW.CanCast(spellName, range, requiresTarget)
 	if requiresTarget then	
@@ -67,8 +67,12 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	start, duration, enabled = GetSpellCooldown(spellName)
 	local getTime = GetTime()
 	cooldownLeft = start + duration - getTime
-	local remainingTime = cooldownLeft - (latencyTolerance * 2)
+	local remainingTime = cooldownLeft - (latencyTolerance)
 	if remainingTime < 0 then remainingTime = 0 end	
+	
+	--if cooldownLeft > 0 and spellName == 'Ebonbolt' then
+		--WoW.Log('Cooldown of Ebonbolt: ' .. cooldownLeft .. ' Lat Tol: ' .. remainingTime)
+	--end
 	
 	if remainingTime ~= 0 then 
 		return false;
@@ -132,6 +136,10 @@ function WoW.EnemyUnitsInRangeXofTarget(rangeX)
 	end
 	
 	return noUnits
+end
+
+function WoW.TargetNearestTarget()
+	TargetNearestEnemy()
 end
 
 function WoW.SpellCharges(spell)
