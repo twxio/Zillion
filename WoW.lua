@@ -1,11 +1,13 @@
 local WoW = LibStub:NewLibrary("WoW", 1)
 
+local cooldownLeft = 0
+
 function WoW.CastSpell(spellName)
     if UnitExists("Target") and not IsHackEnabled("AlwaysFacing") then				
 		FaceDirection(GetAnglesBetweenObjects("Player", "Target"), true);	
 	end;	
 	c = WoW.ClassColors[select(3,UnitClass("player"))]	
-	WoW.Log(c.hex .. 'Casting: |r' .. spellName);
+	WoW.Log(c.hex .. 'Casting: |r' .. spellName .. ' ' .. cooldownLeft);
 	if UnitExists("Target") then 
 		CastSpellByName(spellName, "Target");
 	else
@@ -61,7 +63,13 @@ function WoW.CanCast(spellName, range, requiresTarget)
 		return false;
 	end;
 	start, duration, enabled = GetSpellCooldown(spellName)
-	if duration ~= 0 then 
+	local getTime = GetTime()
+	cooldownLeft = start + duration - getTime
+	local remainingTime = cooldownLeft - select(4,GetNetStats()) / 100
+    if remainingTime < 0 then remainingTime = 0 end
+	cooldownLeft = math.floor(cooldownLeft)
+	
+	if remainingTime ~= 0 then 
 		return false;
 	end;
 	

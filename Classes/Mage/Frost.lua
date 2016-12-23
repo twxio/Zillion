@@ -58,14 +58,14 @@ function Pulse()
 		end
 	end
 	
-	if WoW.PlayerBuffRemainingTime("Ice Barrier") < 20 then
-		start, duration, enabled = GetSpellCooldown("Ice Barrier")
-		if duration ~= 0 then 
-			return;
-		end
-		WoW.CastSpell("Ice Barrier")
-		return;
-	end
+--	if WoW.PlayerBuffRemainingTime("Ice Barrier") < 20 then
+--		start, duration, enabled = GetSpellCooldown("Ice Barrier")
+--		if duration ~= 0 then 
+--			return;
+--		end
+--		WoW.CastSpell("Ice Barrier")
+--		return;
+--	end
 
 	if not UnitExists("Target") then 		
 		PetStopAttack()		
