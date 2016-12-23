@@ -1,6 +1,7 @@
 local WoW = LibStub:NewLibrary("WoW", 1)
 
 local latencyTolerance = 0 
+local LastSpell = "";
 
 function WoW.CastSpell(spellName)
 	latencyTolerance = select(4,GetNetStats()) / 1000 
@@ -15,6 +16,7 @@ function WoW.CastSpell(spellName)
 	else
 		CastSpellByName(spellName, "");
 	end;	
+	LastSpell = spellName;
 end
 
 WoW.ClassColors = {
@@ -138,10 +140,6 @@ function WoW.EnemyUnitsInRangeXofTarget(rangeX)
 	return noUnits
 end
 
-function WoW.TargetNearestTarget()
-	TargetNearestEnemy()
-end
-
 function WoW.SpellCharges(spell)
 	charges = select(1, GetSpellCharges(spell))
 	if charges ~= nil then
@@ -149,6 +147,25 @@ function WoW.SpellCharges(spell)
 	end;
 		
 	return 0;		
+end
+
+
+function WoW.LastSpell()
+	return LastSpell;
+end
+
+function WoW.CastAtUnit(unit, spellName)
+	CastSpellByName(spellName)
+	local oX, oY, oZ = ObjectPosition(unit);
+	ClickPosition(oX,oY,oZ)
+end
+
+function WoW.PlayerBuffCount(buffName)
+	name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId = UnitAura("player", buffName)
+	if count == nil then
+		return 0;
+	end
+	return count;
 end
 
 function WoW.PlayerHasBuff(buffName)

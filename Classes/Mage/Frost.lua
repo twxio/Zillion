@@ -38,11 +38,12 @@ local clicked = false;
 local tick = 0;
 local inCombatTime = 0;
 local WoW = LibStub("WoW")
+local classColor 
 
 function start()	
-	c = WoW.ClassColors[select(3,UnitClass("player"))]
-	parent.t:SetColorTexture(c.R, c.G, c.B, 1)	
-	LibDraw.Enable(0.005)
+	classColor = WoW.ClassColors[select(3,UnitClass("player"))]
+	parent.t:SetColorTexture(classColor.R, classColor.G, classColor.B, 1)	
+	LibDraw.Enable(0.005)	
 end
 
 function update(self, elapsed)
@@ -57,12 +58,14 @@ end
 local lastEnemyCount = 0
 
 LibDraw.Sync(function()
-	if UnitExists("Target") then
-		local pX,  pY,  pZ = ObjectPosition("player")
+	if UnitExists("Target") then			
+		local _,  _,  pZ = ObjectPosition("player")
+		local dist = GetDistanceBetweenObjects("player", "target")		
+		local pX,  pY,  _ = GetPositionBetweenObjects("target", "player", dist - 4)
 		local tX,  tY,  tZ = ObjectPosition("target")
-		local hitbox = 8
-		LibDraw.Circle(tX, tY, tZ, hitbox);
-		LibDraw.Line(pX, pY, pZ, tX, tY, tZ)
+		LibDraw.SetColorRaw(classColor.R, classColor.G, classColor.B, 1)	
+		LibDraw.Line(pX, pY, pZ, tX, tY, tZ)		
+		LibDraw.Circle(tX, tY, tZ, 8);	
 	end
 end)
 
@@ -91,7 +94,7 @@ function Pulse()
 		end
 	end
 	
-	if WoW.PlayerBuffRemainingTime("Ice Barrier") < 20 then
+	if WoW.PlayerBuffRemainingTime("Ice Barrier") <= 5 then
 		start, duration, enabled = GetSpellCooldown("Ice Barrier")
 		if duration ~= 0 then 
 			return;
@@ -146,42 +149,78 @@ function Pulse()
 	end;
 
 	-- Rotation Stuff 	
+	
+	-- 1. Cast Icy Veins if it is off cooldown.
+	if WoW.CanCast("Icy Veins", 40, true) then
+		WoW.CastSpell("Icy Veins");	--  this spell does not activate GCD no return needed	
+	end		
 	if WoW.CanCast("Mirror Image", 40, true) then
 		WoW.CastSpell("Mirror Image");
 		return;
 	end		
-	if WoW.CanCast("Ebonbolt", 40, true) then
-		WoW.CastSpell("Ebonbolt");
+	-- 8. Cast Frostbolt and immediately Flurry if Brain Freeze is active.
+		-- Cast Ice Lance immediately after Flurry.
+		-- You should dump your Fingers of Frost procs before casting Flurry, as Ice Lance does not need Fingers of Frost to benefit from Winter's Chill.
+	if WoW.CanCast("Ice Lance", 40, true) and WoW.LastSpell() == "Flurry" then
+		WoW.CastSpell("Ice Lance");
 		return;
-	end		
-	if WoW.CanCast("Icy Veins", 40, true) then
-		WoW.CastSpell("Icy Veins");
+	end;
+	-- 2. Cast Ice Lance if you are at 3 charges of Fingers of Frost.
+	if WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") == 3 then
+		--WoW.Log("Cast Ice Lance if you are at 3 charges of Fingers of Frost")
+		WoW.CastSpell("Ice Lance");
 		return;
-	end		
-	if WoW.CanCast("Ray of Frost", 40, true) then
-		WoW.CastSpell("Ray of Frost");
-		return;
-	end	
+	end;		
+	-- 3. Cast Frost Bomb if talented, and you will trigger it with a minimum of 2 Fingers of Frost.
+	-- 4. Cast Frozen Orb if it is off cooldown.
 	if WoW.CanCast("Frozen Orb", 40, true) then
 		WoW.CastSpell("Frozen Orb");
 		return;
 	end
-	if WoW.CanCast("Frozen Touch", 40, true) and not WoW.PlayerHasBuff("Fingers of Frost") then
+	-- 5. Cast Freeze from your Water Elemental if it will hit at least 2 adds that can be rooted (bosses are immune to Freeze).
+	if WoW.CanCast("Freeze", 40, true) and enemiesInMeleeRangeOfTarget >= 2 then 
+		WoW.Log('Pet Should Freeze here.')
+		WoW.CastAtUnit("target", "Freeze") 	--  this spell does not activate GCD no return needed		
+	end
+	-- 6. Cast Frozen Touch if talented, and you currently have 1 or less charges of Fingers of Frost.
+	if WoW.CanCast("Frozen Touch", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") <= 1 then
 		WoW.CastSpell("Frozen Touch");
 		return;
 	end;
+	-- 7. Cast Ebonbolt if it is off cooldown and you have 1 or less charges of Fingers of Frost.
+	if WoW.CanCast("Ebonbolt", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") <= 1 then
+		WoW.CastSpell("Ebonbolt");
+		return;
+	end;
+	-- 8. Cast Frostbolt and immediately Flurry if Brain Freeze is active.
+		-- Cast Ice Lance immediately after Flurry.
+		-- You should dump your Fingers of Frost procs before casting Flurry, as Ice Lance does not need Fingers of Frost to benefit from Winter's Chill.
 	if WoW.CanCast("Flurry", 40, true) and WoW.PlayerHasBuff("Brain Freeze") then
 		WoW.CastSpell("Flurry");
 		return;
 	end;
-	if (WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerHasBuff("Fingers of Frost")) or (UnitMovementFlags("Player") ~= 0 and UnitExists("target")) then
+	-- 9. Cast Ice Lance following a Brain Freeze empowered Flurry cast to benefit from Winter's Chill.	
+	if (WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerHasBuff("Fingers of Frost")) then 
 		WoW.CastSpell("Ice Lance");
 		return;
 	end;
+	-- 10. Cast Water Jet from your Water Elemental if you currently have no charges of Fingers of Frost.
+		-- Your goal is to cast Frostbolt twice while Water Jet is being channeled to generate charges of Fingers of Frost (see our Water Jet section for more information).
+	if WoW.CanCast("Water Jet", 40, true) then
+		WoW.CastSpell("Water Jet");
+		return;
+	end;
+	-- 11. Cast Ice Lance if you have 1 charge of Fingers of Frost.
+	if WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") == 1 then
+		WoW.CastSpell("Ice Lance");
+		return;
+	end;
+	-- 12. Cast Glacial Spike if talented and available.
 	if WoW.CanCast("Glacial Spike", 40, true) then
 		WoW.CastSpell("Glacial Spike");
 		return;
 	end;
+	-- 13. Cast Frostbolt as a filler spell.
 	if WoW.CanCast("Frostbolt", 40, true) then
 		WoW.CastSpell("Frostbolt");
 		return;
