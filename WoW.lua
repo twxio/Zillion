@@ -30,6 +30,8 @@ WoW.ClassColors = {
 	[12] 			= {class = "Demonhunter", 	B=0.79, G=0.19, R=0.64, hex="|cffa330c9"},
 }
 
+local latencyTolerance = select(4,GetNetStats()) / 100
+
 function WoW.CanCast(spellName, range, requiresTarget)
 	if requiresTarget then	
 		if not UnitExists("Target") and target ~= player then 
@@ -65,9 +67,8 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	start, duration, enabled = GetSpellCooldown(spellName)
 	local getTime = GetTime()
 	cooldownLeft = start + duration - getTime
-	local remainingTime = cooldownLeft - select(4,GetNetStats()) / 100
-	if remainingTime < 0 then remainingTime = 0 end
-	cooldownLeft = math.floor(cooldownLeft)
+	local remainingTime = cooldownLeft - (latencyTolerance * 2)
+	if remainingTime < 0 then remainingTime = 0 end	
 	
 	if remainingTime ~= 0 then 
 		return false;
