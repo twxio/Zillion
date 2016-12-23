@@ -66,7 +66,7 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	local getTime = GetTime()
 	cooldownLeft = start + duration - getTime
 	local remainingTime = cooldownLeft - select(4,GetNetStats()) / 100
-    if remainingTime < 0 then remainingTime = 0 end
+	if remainingTime < 0 then remainingTime = 0 end
 	cooldownLeft = math.floor(cooldownLeft)
 	
 	if remainingTime ~= 0 then 
