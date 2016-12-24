@@ -94,7 +94,7 @@ function Pulse()
 		end
 	end
 	
-	if WoW.PlayerBuffRemainingTime("Ice Barrier") <= 5 then
+	if WoW.PlayerBuffRemainingTime("Ice Barrier") <= 5 and not WoW.InCombat() then
 		start, duration, enabled = GetSpellCooldown("Ice Barrier")
 		if duration ~= 0 then 
 			return;
@@ -143,8 +143,14 @@ function Pulse()
 	end
 		
 	-- Survival Stuff (Higest Priority)
-	if WoW.GetHealth("Player") < 20 and WoW.SpellCharges("Ice Block") > 0 and WoW.CanCast("Ice Block", 0, false) then
+	if WoW.GetHealth("Player") < 5 and WoW.SpellCharges("Ice Block") > 0 and WoW.CanCast("Ice Block", 0, false) then
 		WoW.CastSpell("Ice Block");
+		return;
+	end;
+	
+	-- Survival Stuff (Higest Priority)
+	if WoW.GetHealth("Player") < 95 and WoW.CanCast("Ice Barrier", 0, false) then
+		WoW.CastSpell("Ice Barrier")
 		return;
 	end;
 
@@ -152,12 +158,35 @@ function Pulse()
 		
 	-- 1. Cast Rune of Power if talented, and it is at 2 charges.
 	if WoW.CanCast("Rune of Power", 40, true) and WoW.SpellCharges("Rune of Power") == 2 then
-		WoW.CastSpell("Rune of Power");	
+		WoW.CastSpell("Rune of Power");			
+		return;
+	end	
+	-- Rune of Power advanced
+	-- Use RoP If icy veins is 40+ secs away, Frost Orb is soon, We Have FoF procs
+	if WoW.CanCast("Rune of Power", 40, true) and 
+	   WoW.SpellCharges("Rune of Power") >= 1 and 
+	   WoW.SpellCooldownRemainingTime("Icy Veins") > 40 and 
+	  (WoW.SpellCooldownRemainingTime("Frozen Orb") <= 1 or WoW.SpellCooldownRemainingTime("Frozen Touch") <= 1 ) then
+		WoW.Log("Optimal Rune of Power triggered")
+		WoW.CastSpell("Rune of Power");			
 		return;
 	end		
+	-- Prolong RoP when Icy Veins Up
+	-- If Icy Veins active, or we have capped rune of power Use RoP
+	-- Since we are about to trigger RoP cast Orb if up to ready FoF procs
+	if UnitBuff("Player", "Icy Veins") and
+	   WoW.CanCast("Rune of Power", 40, true) and 
+	   WoW.SpellCharges("Rune of Power") >= 1 then
+		WoW.Log("Prolong rune of power because Icy Veins is up")
+		WoW.CastSpell("Rune of Power");		
+	end
+	
+	if WoW.CanCast("Icy Veins", 40, true) and WoW.PlayerTalentAtTier(3) == 2 and UnitBuff("Player", "Rune of Power") then
+		WoW.CastSpell("Icy Veins");	
+	end		
 	-- 1. Cast Icy Veins if it is off cooldown.	
-	if WoW.CanCast("Icy Veins", 40, true) then
-		WoW.CastSpell("Icy Veins");	--  this spell does not activate GCD no return needed	
+	if WoW.CanCast("Icy Veins", 40, true) and not WoW.PlayerTalentAtTier(3) == 2 then
+		WoW.CastSpell("Icy Veins");	
 	end		
 	if WoW.CanCast("Mirror Image", 40, true) then
 		WoW.CastSpell("Mirror Image");
@@ -218,12 +247,17 @@ function Pulse()
 		WoW.CastSpell("Ice Lance");
 		return;
 	end;
-	-- 10. Cast Water Jet from your Water Elemental if you currently have no charges of Fingers of Frost.
-		-- Your goal is to cast Frostbolt twice while Water Jet is being channeled to generate charges of Fingers of Frost (see our Water Jet section for more information).
+	-- 10. Cast Water Jet from your Water Elemental if you currently have no charges of Fingers of Frost.		
 	if WoW.CanCast("Water Jet", 40, true) then
 		WoW.CastSpell("Water Jet");
 		return;
 	end;
+	-- Your goal is to cast Frostbolt twice while Water Jet is being channeled to generate charges of Fingers of Frost (see our Water Jet section for more information).
+	if WoW.CanCast("Frostbolt") and UnitChannelInfo("Pet") then
+		WoW.Log("Casting Frostbolt because water jet is chanelling")
+		WoW.CastSpell("Frostbolt")		
+		return;
+	end	
 	-- AOE stuff here
 	if enemiesInMeleeRangeOfTarget >= 4 then
 		-- 11. Cast Ice Nova if talented.

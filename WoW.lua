@@ -55,6 +55,11 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	if UnitChannelInfo("Player") then 
 		return false;	
 	end;		
+	if spellName == "Water Jet" then
+		if UnitChannelInfo("Pet") then 
+			return false;	
+		end;		
+	end
 	if UnitIsDeadOrGhost("Player") then 
 		return false;
 	end;
@@ -71,10 +76,6 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	cooldownLeft = start + duration - getTime
 	local remainingTime = cooldownLeft - (latencyTolerance)
 	if remainingTime < 0 then remainingTime = 0 end	
-	
-	--if cooldownLeft > 0 and spellName == 'Ebonbolt' then
-		--WoW.Log('Cooldown of Ebonbolt: ' .. cooldownLeft .. ' Lat Tol: ' .. remainingTime)
-	--end
 	
 	if remainingTime ~= 0 then 
 		return false;
@@ -203,6 +204,15 @@ function WoW.TargetHasDebuff(debuffName)
 		return false;	
 	end;
 	return true;
+end
+
+function WoW.SpellCooldownRemainingTime(spellName)
+	start, duration, enabled = GetSpellCooldown(spellName)
+	local getTime = GetTime()
+	cooldownLeft = start + duration - getTime
+	local remainingTime = cooldownLeft - (latencyTolerance)
+	if remainingTime < 0 then remainingTime = 0 end	
+	return math.floor(remainingTime + 0.5)
 end
 
 function WoW.PlayerBuffRemainingTime(buffName)
