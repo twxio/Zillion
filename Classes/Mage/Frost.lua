@@ -170,6 +170,11 @@ function Pulse()
 		WoW.CastSpell("Ice Lance");
 		return;
 	end;
+	-- 12. Cast Blizzard on cooldown if you are talented into Arctic Gale.
+	if WoW.CanCast("Blizzard") and WoW.PlayerTalentAtTier(6) == 3 then
+		WoW.CastAtUnit("target", "Blizzard");
+		return;
+	end
 	-- 2. Cast Ice Lance if you are at 3 charges of Fingers of Frost.
 	if WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") == 3 then
 		--WoW.Log("Cast Ice Lance if you are at 3 charges of Fingers of Frost")

@@ -184,6 +184,11 @@ function WoW.PlayerHasBuff(buffName)
 	return true;
 end
 
+function WoW.PlayerTalentAtTier(talentTier)
+	local available, selected = GetTalentTierInfo(talentTier, 1);
+	return selected;
+end
+
 function WoW.TargetHasDebuff(debuffName)
 	local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId, canApplyAura, isBossDebuff, value1, value2, value3 = UnitDebuff("target", debuffName, nil, "PLAYER|HARMFUL")
 	local getTime = GetTime()
