@@ -149,8 +149,13 @@ function Pulse()
 	end;
 
 	-- Rotation Stuff 	
-	
-	-- 1. Cast Icy Veins if it is off cooldown.
+		
+	-- 1. Cast Rune of Power if talented, and it is at 2 charges.
+	if WoW.CanCast("Rune of Power", 40, true) and WoW.SpellCharges("Rune of Power") == 2 then
+		WoW.CastSpell("Rune of Power");	
+		return;
+	end		
+	-- 1. Cast Icy Veins if it is off cooldown.	
 	if WoW.CanCast("Icy Veins", 40, true) then
 		WoW.CastSpell("Icy Veins");	--  this spell does not activate GCD no return needed	
 	end		
@@ -172,6 +177,10 @@ function Pulse()
 		return;
 	end;		
 	-- 3. Cast Frost Bomb if talented, and you will trigger it with a minimum of 2 Fingers of Frost.
+	if WoW.CanCast("Frost Bomb", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") >= 2 and not WoW.TargetHasDebuff("Frost Bomb") then
+		WoW.CastSpell("Frost Bomb");
+		return;
+	end
 	-- 4. Cast Frozen Orb if it is off cooldown.
 	if WoW.CanCast("Frozen Orb", 40, true) then
 		WoW.CastSpell("Frozen Orb");
@@ -210,6 +219,19 @@ function Pulse()
 		WoW.CastSpell("Water Jet");
 		return;
 	end;
+	-- AOE stuff here
+	if enemiesInMeleeRangeOfTarget >= 4 then
+		-- 11. Cast Ice Nova if talented.
+		if WoW.CanCast("Ice Nova", 40, true) then
+			WoW.CastSpell("Ice Nova");
+			return;
+		end;
+		-- 12. Cast Blizzard if more than 4 targets are present and within the AoE. Cast on cooldown if you are talented into Arctic Gale.
+		if WoW.CanCast("Blizzard", 40, true) then
+			WoW.CastAtUnit("target", "Blizzard");
+			return;
+		end;
+	end
 	-- 11. Cast Ice Lance if you have 1 charge of Fingers of Frost.
 	if WoW.CanCast("Ice Lance", 40, true) and WoW.PlayerBuffCount("Fingers of Frost") == 1 then
 		WoW.CastSpell("Ice Lance");

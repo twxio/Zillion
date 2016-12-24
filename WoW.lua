@@ -184,6 +184,22 @@ function WoW.PlayerHasBuff(buffName)
 	return true;
 end
 
+function WoW.TargetHasDebuff(debuffName)
+	local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId, canApplyAura, isBossDebuff, value1, value2, value3 = UnitDebuff("target", debuffName, nil, "PLAYER|HARMFUL")
+	local getTime = GetTime()
+    local remainingTime = 0	
+	if expirationTime == nil then 
+		expirationTime = 0 
+	end;	
+	if expirationTime ~=0 then
+		remainingTime = math.floor(expirationTime - getTime + 0.5)
+    end
+	if remainingTime == 0 then
+		return false;	
+	end;
+	return true;
+end
+
 function WoW.PlayerBuffRemainingTime(buffName)
 	local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId = UnitBuff("Player", buffName)
 	local getTime = GetTime()
