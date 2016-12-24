@@ -185,7 +185,7 @@ function Pulse()
 		WoW.CastSpell("Icy Veins");	
 	end		
 	-- 1. Cast Icy Veins if it is off cooldown.	
-	if WoW.CanCast("Icy Veins", 40, true) and not WoW.PlayerTalentAtTier(3) == 2 then
+	if WoW.CanCast("Icy Veins", 40, true) and WoW.PlayerTalentAtTier(3) ~= 2 then
 		WoW.CastSpell("Icy Veins");	
 	end		
 	if WoW.CanCast("Mirror Image", 40, true) then
