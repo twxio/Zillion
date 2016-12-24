@@ -40,7 +40,9 @@ function WoW.CanCast(spellName, range, requiresTarget)
 			return false; 
 		end;
 		if not WoW.LOS("Target") then
-			return false;
+			if not IsInInstance() then -- ignore LOS checking in Instances / Dungeons						
+				return false;
+			end
 		end;
 		if WoW.GetDistanceTo("Target") > range then 
 			return false; 
@@ -63,7 +65,7 @@ function WoW.CanCast(spellName, range, requiresTarget)
 	if UnitIsDeadOrGhost("Player") then 
 		return false;
 	end;
-	if not IsHackEnabled("MovingCast") then
+	if not IsHackEnabled("MovingCast") or not WoW.PlayerHasBuff("Ice Floes") then
 		if UnitMovementFlags("Player") ~= 0 and select(4, GetSpellInfo(spellName)) ~= 0 then -- If the player is moving and not trying to cast an instant cast spell
 			return false;
 		end;		
@@ -139,6 +141,19 @@ function WoW.EnemyUnitsInRangeXofTarget(rangeX)
 	end
 	
 	return noUnits
+end
+
+function WoW.TargetNextUnitInCombat()
+	local count = GetObjectCount();		
+	for i = 1, count do
+		currentObj = GetObjectWithIndex(i);		
+		if ObjectIsType(currentObj, ObjectTypes.Unit) then
+			if UnitAffectingCombat(currentObj) and UnitCanAttack("Player", currentObj) and not UnitIsDeadOrGhost(currentObj) and not WoW.LOS(unit) then							
+				TargetUnit(currentObj);
+				break;
+			end
+		end		
+	end
 end
 
 function WoW.SpellCharges(spell)

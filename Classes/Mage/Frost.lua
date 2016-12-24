@@ -34,6 +34,7 @@ button:SetPushedTexture(ptex)
 local LibDraw = LibStub("LibDraw-1.0")
 
 local clicked = false;
+local rand = math.random(5, 15)
 
 local tick = 0;
 local inCombatTime = 0;
@@ -58,7 +59,7 @@ end
 local lastEnemyCount = 0
 
 LibDraw.Sync(function()
-	if UnitExists("Target") then			
+	if UnitExists("Target") and not UnitIsDeadOrGhost("Target") then			
 		local _,  _,  pZ = ObjectPosition("player")
 		local dist = GetDistanceBetweenObjects("player", "target")		
 		local pX,  pY,  _ = GetPositionBetweenObjects("target", "player", dist - 4)
@@ -72,6 +73,12 @@ end)
 function Pulse()	
 	if UnitIsDeadOrGhost("Player") then
 		return;
+	end
+	
+	if UnitMovementFlags("Player") ~= 0 and WoW.InCombat() then
+		if WoW.CanCast("Ice Floes", 40, true) and not WoW.PlayerHasBuff("Ice Floes") then
+			WoW.CastSpell("Ice Floes");						
+		end	
 	end
 	
 	if not WoW.InCombat() then		
@@ -93,28 +100,38 @@ function Pulse()
 			WoW.CastSpell("Summon Water Elemental")
 		end
 	end
-	
-	if WoW.PlayerBuffRemainingTime("Ice Barrier") <= 5 and not WoW.InCombat() then
+		
+	if WoW.PlayerBuffRemainingTime("Ice Barrier") <= rand and not WoW.InCombat() then
 		start, duration, enabled = GetSpellCooldown("Ice Barrier")
 		if duration ~= 0 then 
 			return;
 		end
-		WoW.CastSpell("Ice Barrier")
+		WoW.CastSpell("Ice Barrier")		
+		rand = math.random(5, 15)
+		WoW.Log("Next Random: " .. rand)
 		return;
 	end
 
-	if not UnitExists("Target") then 		
+	if UnitIsDeadOrGhost("Target") or not UnitExists("Target") and WoW.InCombat() then 				
+		WoW.Log("Unit Died - Targeting next Unit.")
+		WoW.TargetNextUnitInCombat()		
+		if UnitExists("Target") then
+			WoW.CastSpell("Ice Lance");
+		end			
+		--TargetNearestEnemy()	
+	end	
+	
+	if not WoW.InCombat() then
 		PetStopAttack()		
 		return;
-	end	
+	end
 	
 	if not UnitCanAttack("Player", "Target") then 
 		return;	
 	end
-
+	
 	if not WoW.InCombat() then		
 		inCombatTime = 0;
-		return;		
 	end	
 		
 	-- Do InCombat Stuff	
@@ -143,7 +160,7 @@ function Pulse()
 	end
 		
 	-- Survival Stuff (Higest Priority)
-	if WoW.GetHealth("Player") < 5 and WoW.SpellCharges("Ice Block") > 0 and WoW.CanCast("Ice Block", 0, false) then
+	if WoW.GetHealth("Player") < 10 and WoW.CanCast("Ice Block", 0, false) then
 		WoW.CastSpell("Ice Block");
 		return;
 	end;
@@ -186,10 +203,11 @@ function Pulse()
 	end		
 	-- 1. Cast Icy Veins if it is off cooldown.	
 	if WoW.CanCast("Icy Veins", 40, true) and WoW.PlayerTalentAtTier(3) ~= 2 then
-		WoW.CastSpell("Icy Veins");	
+		WoW.CastSpell("Icy Veins");			
 	end		
 	if WoW.CanCast("Mirror Image", 40, true) then
-		WoW.CastSpell("Mirror Image");
+		RunMacroText('/use 13')
+		WoW.CastSpell("Mirror Image");		
 		return;
 	end		
 	-- 8. Cast Frostbolt and immediately Flurry if Brain Freeze is active.
@@ -222,7 +240,7 @@ function Pulse()
 	end
 	-- 5. Cast Freeze from your Water Elemental if it will hit at least 2 adds that can be rooted (bosses are immune to Freeze).
 	if WoW.CanCast("Freeze", 40, true) and enemiesInMeleeRangeOfTarget >= 2 then 
-		WoW.Log('Pet Should Freeze here.')
+		--WoW.Log('Pet Should Freeze here.')
 		WoW.CastAtUnit("target", "Freeze") 	--  this spell does not activate GCD no return needed		
 	end
 	-- 6. Cast Frozen Touch if talented, and you currently have 1 or less charges of Fingers of Frost.
@@ -288,7 +306,19 @@ function Pulse()
 	end;
 end
 
+function eventHandler(self, event, ...)
+	if event == "LFG_PROPOSAL_SHOW" then 
+		WoW.Log("LFG Triggered")
+		if GetLFGProposal() then
+			AcceptProposal()
+		end
+	end
+end
+
 parent:SetScript("OnUpdate", update)
+parent:RegisterEvent("LFG_PROPOSAL_SHOW")
+parent:SetScript("OnEvent", eventHandler)
+
 start()
 
 button:RegisterForClicks("AnyUp", "AnyDown")
@@ -296,6 +326,7 @@ button:RegisterForClicks("AnyUp", "AnyDown")
 function Click()
 	clicked = true;
 	WoW.Log('DPS Test Started...');
+	--WoW.TargetNextUnitInCombat()
 	TargetNearestEnemy()
 	WoW.CastSpell("Ice Lance");
 end
