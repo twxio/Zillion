@@ -6,7 +6,7 @@ parent.t = parent:CreateTexture()
 parent.t:SetAllPoints(parent)
 
 local button = CreateFrame("Button", nil, UIParent)
-button:SetPoint("TOP", UIParent, "TOP", 0, 0)
+button:SetPoint("TOP", UIParent, "TOP", -43, 0)
 button:SetWidth(85)
 button:SetHeight(25)
 
@@ -30,6 +30,32 @@ ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
 ptex:SetTexCoord(0, 0.625, 0, 0.6875)
 ptex:SetAllPoints()
 button:SetPushedTexture(ptex)
+
+local button2 = CreateFrame("Button", nil, UIParent)
+button2:SetPoint("TOP", UIParent, "TOP", 43, 0)
+button2:SetWidth(85)
+button2:SetHeight(25)
+
+button2:SetText("Tank")
+button2:SetNormalFontObject("GameFontNormal")
+
+local ntex = button2:CreateTexture()
+ntex:SetTexture("Interface/Buttons/UI-Panel-Button-Up")
+ntex:SetTexCoord(0, 0.625, 0, 0.6875)
+ntex:SetAllPoints()	
+button2:SetNormalTexture(ntex)
+
+local htex = button2:CreateTexture()
+htex:SetTexture("Interface/Buttons/UI-Panel-Button-Highlight")
+htex:SetTexCoord(0, 0.625, 0, 0.6875)
+htex:SetAllPoints()
+button2:SetHighlightTexture(htex)
+
+local ptex = button2:CreateTexture()
+ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
+ptex:SetTexCoord(0, 0.625, 0, 0.6875)
+ptex:SetAllPoints()
+button2:SetPushedTexture(ptex)
 
 local LibDraw = LibStub("LibDraw-1.0")
 
@@ -62,7 +88,7 @@ LibDraw.Sync(function()
 	if UnitExists("Target") and not UnitIsDeadOrGhost("Target") then			
 		local _,  _,  pZ = ObjectPosition("player")
 		local dist = GetDistanceBetweenObjects("player", "target")		
-		local pX,  pY,  _ = GetPositionBetweenObjects("target", "player", dist - 4)
+		local pX,  pY,  _ = GetPositionBetweenObjects("target", "player", dist - 2)
 		local tX,  tY,  tZ = ObjectPosition("target")
 		LibDraw.SetColorRaw(classColor.R, classColor.G, classColor.B, 1)	
 		LibDraw.Line(pX, pY, pZ, tX, tY, tZ)		
@@ -73,6 +99,12 @@ end)
 function Pulse()	
 	if UnitIsDeadOrGhost("Player") then
 		return;
+	end
+	
+	-- Arena Specific Stuff
+	tar = WoW.GetArenaDPSsTarget()
+	if tar ~= nil then
+		TargetUnit(tar)
 	end
 	
 	if UnitMovementFlags("Player") ~= 0 and WoW.InCombat() then
@@ -113,12 +145,8 @@ function Pulse()
 	end
 
 	if UnitIsDeadOrGhost("Target") or not UnitExists("Target") and WoW.InCombat() then 				
-		WoW.Log("Unit Died - Targeting next Unit.")
-		WoW.TargetNextUnitInCombat()		
-		if UnitExists("Target") then
-			WoW.CastSpell("Ice Lance");
-		end			
-		--TargetNearestEnemy()	
+		--WoW.Log("Unit Died - Targeting next Unit.")		
+		TargetUnit(WoW.GetTanksTarget())				
 	end	
 	
 	if not WoW.InCombat() then
@@ -155,7 +183,7 @@ function Pulse()
 		
 	local enemiesInMeleeRangeOfTarget = WoW.EnemyUnitsInRangeXofTarget(8)
 	if enemiesInMeleeRangeOfTarget > 0 and lastEnemyCount ~= enemiesInMeleeRangeOfTarget then
-		WoW.Log('Enemies in range 8 of target: ' .. enemiesInMeleeRangeOfTarget) 
+		--WoW.Log('Enemies in range 8 of target: ' .. enemiesInMeleeRangeOfTarget) 
 		lastEnemyCount = enemiesInMeleeRangeOfTarget
 	end
 		
@@ -313,15 +341,25 @@ function eventHandler(self, event, ...)
 			AcceptProposal()
 		end
 	end
+	if event == "GROUP_ROSTER_UPDATE" or event == "GROUP_JOINED" then
+		WoW.ShowGroupInfo()
+	end
+	if event == "ARENA_PROPOSAL_SHOW" then
+		WoW.Log('Arena')
+	end
 end
 
 parent:SetScript("OnUpdate", update)
 parent:RegisterEvent("LFG_PROPOSAL_SHOW")
+parent:RegisterEvent("ARENA_PROPOSAL_SHOW")
+parent:RegisterEvent("GROUP_ROSTER_UPDATE")
+parent:RegisterEvent("GROUP_JOINED")
 parent:SetScript("OnEvent", eventHandler)
 
 start()
 
-button:RegisterForClicks("AnyUp", "AnyDown")
+button2:RegisterForClicks("AnyDown")
+button:RegisterForClicks("AnyDown")
 
 function Click()
 	clicked = true;
@@ -331,4 +369,10 @@ function Click()
 	WoW.CastSpell("Ice Lance");
 end
 
+function Click2()
+	WoW.GetTanksTarget()
+end
+
+
 button:SetScript("OnClick", Click)
+button2:SetScript("OnClick", Click2)

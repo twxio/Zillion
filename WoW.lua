@@ -148,13 +148,96 @@ function WoW.TargetNextUnitInCombat()
 	for i = 1, count do
 		currentObj = GetObjectWithIndex(i);		
 		if ObjectIsType(currentObj, ObjectTypes.Unit) then
-			if UnitAffectingCombat(currentObj) and UnitCanAttack("Player", currentObj) and not UnitIsDeadOrGhost(currentObj) and not WoW.LOS(unit) then							
+			if UnitCanAttack("Player", currentObj) and not UnitIsDeadOrGhost(currentObj) and not WoW.LOS(unit) then							
 				TargetUnit(currentObj);
 				break;
 			end
 		end		
 	end
 end
+
+function WoW.ShowGroupInfo()
+	local groupType = IsInRaid() and "raid" or "party";
+	for i=1, GetNumGroupMembers() do
+		if groupType == "party" then      
+			Unit = (groupType .. i)    
+			Role=UnitGroupRolesAssigned(Unit)
+			WoW.Log('Group Type: ' .. groupType)
+			WoW.Log('Role: ' .. Role)
+			if Role == "TANK" then
+			
+			end
+		end
+	end
+end
+
+function WoW.GetTank()
+	local groupType = IsInRaid() and "raid" or "party";
+	for i=1, GetNumGroupMembers() do
+		if groupType == "party" then      
+			Unit = (groupType .. i)    
+			Role=UnitGroupRolesAssigned(Unit)
+			WoW.Log('Group Type: ' .. groupType)
+			WoW.Log('Role: ' .. Role)
+			if Role == "TANK" then
+				return Unit
+			end
+		end
+	end
+end
+
+function WoW.GetTanksTarget()
+	--WoW.Log('Tank Details...')
+	local groupType = IsInRaid() and "raid" or "party";
+	for i=1, GetNumGroupMembers() do
+		if groupType == "party" then      
+			Unit = (groupType .. i)    			
+			if UnitGroupRolesAssigned(Unit) == "TANK" then
+				--WoW.Log('Tank Name: ' .. ObjectName(Unit))
+				tar = UnitTarget(Unit);
+				if tar ~= nil then
+					tarName = ObjectName(tar)
+					--WoW.Log('Tanks Target : ' ..tarName)
+				end
+				--WoW.Log('Tanks Target : None')
+				return tar;
+			end
+			return nil;
+		end
+	end
+end
+
+function WoW.GetArenaDPSsTarget()	
+	for i=1, GetNumGroupMembers() do		
+		local groupType = "arena"
+		Unit = (groupType .. i)    
+		Role=UnitGroupRolesAssigned(Unit)
+		WoW.Log('Role: ' .. Role)
+		local tar = UnitTarget(Unit);
+		if Role ~= "HEALER" then
+			if tar ~= nil and UnitExists("Target") and not UnitIsDeadOrGhost("Target") then
+				return tar
+			end
+		end
+		return nil;
+	end
+end
+
+function WoW.GetArenaDPSsTarget()	
+	local groupType = "arena"
+	for i=1, GetNumGroupMembers() do		
+		Unit = (groupType .. i)    			
+		if UnitGroupRolesAssigned(Unit) == "DAMAGER" then			
+			tar = UnitTarget(Unit);
+			if tar ~= nil then
+				tarName = ObjectName(tar)				
+			end			
+			return tar;
+		end
+		return nil;		
+	end
+end
+
 
 function WoW.SpellCharges(spell)
 	charges = select(1, GetSpellCharges(spell))
