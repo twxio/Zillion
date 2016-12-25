@@ -5,66 +5,15 @@ parent:RegisterEvent("ADDON_LOADED")
 parent.t = parent:CreateTexture()
 parent.t:SetAllPoints(parent)
 
-local button = CreateFrame("Button", nil, UIParent)
-button:SetPoint("TOP", UIParent, "TOP", -43, 0)
-button:SetWidth(85)
-button:SetHeight(25)
-
-button:SetText("DPS Test")
-button:SetNormalFontObject("GameFontNormal")
-
-local ntex = button:CreateTexture()
-ntex:SetTexture("Interface/Buttons/UI-Panel-Button-Up")
-ntex:SetTexCoord(0, 0.625, 0, 0.6875)
-ntex:SetAllPoints()	
-button:SetNormalTexture(ntex)
-
-local htex = button:CreateTexture()
-htex:SetTexture("Interface/Buttons/UI-Panel-Button-Highlight")
-htex:SetTexCoord(0, 0.625, 0, 0.6875)
-htex:SetAllPoints()
-button:SetHighlightTexture(htex)
-
-local ptex = button:CreateTexture()
-ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
-ptex:SetTexCoord(0, 0.625, 0, 0.6875)
-ptex:SetAllPoints()
-button:SetPushedTexture(ptex)
-
-local button2 = CreateFrame("Button", nil, UIParent)
-button2:SetPoint("TOP", UIParent, "TOP", 43, 0)
-button2:SetWidth(85)
-button2:SetHeight(25)
-
-button2:SetText("Tank")
-button2:SetNormalFontObject("GameFontNormal")
-
-local ntex = button2:CreateTexture()
-ntex:SetTexture("Interface/Buttons/UI-Panel-Button-Up")
-ntex:SetTexCoord(0, 0.625, 0, 0.6875)
-ntex:SetAllPoints()	
-button2:SetNormalTexture(ntex)
-
-local htex = button2:CreateTexture()
-htex:SetTexture("Interface/Buttons/UI-Panel-Button-Highlight")
-htex:SetTexCoord(0, 0.625, 0, 0.6875)
-htex:SetAllPoints()
-button2:SetHighlightTexture(htex)
-
-local ptex = button2:CreateTexture()
-ptex:SetTexture("Interface/Buttons/UI-Panel-Button-Down")
-ptex:SetTexCoord(0, 0.625, 0, 0.6875)
-ptex:SetAllPoints()
-button2:SetPushedTexture(ptex)
-
 local LibDraw = LibStub("LibDraw-1.0")
+local WoW = LibStub("WoW")
+local UI =  LibStub("UI")
 
 local clicked = false;
 local rand = math.random(5, 15)
 
 local tick = 0;
 local inCombatTime = 0;
-local WoW = LibStub("WoW")
 local classColor 
 
 function start()	
@@ -147,12 +96,11 @@ function Pulse()
 		return;
 	end
 
-	if UnitIsDeadOrGhost("Target") or not UnitExists("Target") and WoW.InCombat() then 				
-		--WoW.Log("Unit Died - Targeting next Unit.")		
+	if UnitIsDeadOrGhost("Target") or not UnitExists("Target") and WoW.InCombat() then 						
 		TargetUnit(WoW.GetTanksTarget())				
 	end	
 	
-	if not WoW.InCombat() then
+	if not WoW.InCombat() and not UnitIsDeadOrGhost("Pet") then
 		PetStopAttack()		
 		return;
 	end
@@ -167,17 +115,17 @@ function Pulse()
 		
 	-- Do InCombat Stuff	
 	local x = math.floor(inCombatTime)	
-	button:SetText('Timer: ' .. x)
+	UI.UpdateText('Timer: ' .. x)
 	if x >= 5 * 60 and clicked then	-- 5 mins DPS testing	
 		PetStopAttack()	
 		ClearTarget()
 		WoW.Log("DPS Testing has completed.")
-		button:SetText('DPS Test')		
+		UI.UpdateText('5 Minute DPS Test')		
 		clicked = false;
 		return;
 	end
 	
-	if UnitCanAttack("Pet", "Target") and UnitExists("Target") then 
+	if UnitCanAttack("Pet", "Target") and UnitExists("Target") and not UnitIsDeadOrGhost("Pet") then 
 		PetAttack("target")
 	else
 		PetStopAttack()		
@@ -345,7 +293,12 @@ function eventHandler(self, event, ...)
 		end
 	end
 	if event == "GROUP_ROSTER_UPDATE" or event == "GROUP_JOINED" then
-		WoW.ShowGroupInfo()
+	--	WoW.ShowGroupInfo()
+		if not WoW.GetTank() then
+			button2:Disable()
+		else
+			button2:Enable()
+		end
 	end
 	if event == "ARENA_PROPOSAL_SHOW" then
 		WoW.Log('Arena')
@@ -354,28 +307,11 @@ end
 
 parent:SetScript("OnUpdate", update)
 parent:RegisterEvent("LFG_PROPOSAL_SHOW")
-parent:RegisterEvent("ARENA_PROPOSAL_SHOW")
+--parent:RegisterEvent("ARENA_PROPOSAL_SHOW")
 parent:RegisterEvent("GROUP_ROSTER_UPDATE")
 parent:RegisterEvent("GROUP_JOINED")
 parent:SetScript("OnEvent", eventHandler)
 
 start()
 
-button2:RegisterForClicks("AnyDown")
-button:RegisterForClicks("AnyDown")
 
-function Click()
-	clicked = true;
-	WoW.Log('DPS Test Started...');
-	--WoW.TargetNextUnitInCombat()
-	TargetNearestEnemy()
-	WoW.CastSpell("Ice Lance");
-end
-
-function Click2()
-	WoW.GetTanksTarget()
-end
-
-
-button:SetScript("OnClick", Click)
-button2:SetScript("OnClick", Click2)

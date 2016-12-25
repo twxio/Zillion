@@ -83,6 +83,7 @@ function start()
 	c = WoW.ClassColors[classIndex]	
 	WoW.Log('Player Class ' .. c.hex .. englishClass .. '|r spec = ' .. currentSpec)
 	if englishClass == "MAGE" and currentSpec == 3 then
+		LoadFile("UI.lua")
 		LoadFile("Classes\\Mage\\Frost.lua")
 	end	
 	if englishClass == "PRIEST" and currentSpec == 1 then
@@ -102,7 +103,7 @@ parent:SetScript("OnEvent", eventHandler)
 parent:SetScript("OnUpdate", update)
 
 
-button:RegisterForClicks("AnyUp", "AnyDown")
+button:RegisterForClicks("AnyDown")
 
 function down()			
 	ReloadUI()

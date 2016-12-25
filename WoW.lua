@@ -198,10 +198,12 @@ function WoW.GetTanksTarget()
 				if tar ~= nil then
 					tarName = ObjectName(tar)
 					--WoW.Log('Tanks Target : ' ..tarName)
-				end
-				--WoW.Log('Tanks Target : None')
+				else
+					--WoW.Log('Tanks Target : None')
+				end				
 				return tar;
 			end
+			
 			return nil;
 		end
 	end
