@@ -240,7 +240,6 @@ function WoW.GetArenaDPSsTarget()
 	end
 end
 
-
 function WoW.SpellCharges(spell)
 	charges = select(1, GetSpellCharges(spell))
 	if charges ~= nil then
@@ -249,7 +248,6 @@ function WoW.SpellCharges(spell)
 		
 	return 0;		
 end
-
 
 function WoW.LastSpell()
 	return LastSpell;

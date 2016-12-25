@@ -1,10 +1,4 @@
 local parent = CreateFrame("frame", "Recount", UIParent)
-parent:SetSize(0, 0);  -- Width, Height
-parent:SetPoint("TOPLEFT", 0, 0)
-parent:RegisterEvent("ADDON_LOADED")
-parent.t = parent:CreateTexture()
-parent.t:SetAllPoints(parent)
-
 local LibDraw = LibStub("LibDraw-1.0")
 local WoW = LibStub("WoW")
 local UI =  LibStub("UI")
@@ -20,6 +14,7 @@ function start()
 	classColor = WoW.ClassColors[select(3,UnitClass("player"))]
 	parent.t:SetColorTexture(classColor.R, classColor.G, classColor.B, 1)	
 	LibDraw.Enable(0.005)	
+	WoW.Log('Rotation Ready.')
 end
 
 function update(self, elapsed)
@@ -285,32 +280,7 @@ function Pulse()
 	end;
 end
 
-function eventHandler(self, event, ...)
-	if event == "LFG_PROPOSAL_SHOW" then 
-		WoW.Log("LFG Triggered")
-		if GetLFGProposal() then
-			AcceptProposal()
-		end
-	end
-	if event == "GROUP_ROSTER_UPDATE" or event == "GROUP_JOINED" then
-	--	WoW.ShowGroupInfo()
-		if not WoW.GetTank() then
-			button2:Disable()
-		else
-			button2:Enable()
-		end
-	end
-	if event == "ARENA_PROPOSAL_SHOW" then
-		WoW.Log('Arena')
-	end
-end
-
 parent:SetScript("OnUpdate", update)
-parent:RegisterEvent("LFG_PROPOSAL_SHOW")
---parent:RegisterEvent("ARENA_PROPOSAL_SHOW")
-parent:RegisterEvent("GROUP_ROSTER_UPDATE")
-parent:RegisterEvent("GROUP_JOINED")
-parent:SetScript("OnEvent", eventHandler)
 
 start()
 

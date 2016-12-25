@@ -1,3 +1,5 @@
+local parent = CreateFrame("frame", "Recount", UIParent)
+
 local UI = LibStub:NewLibrary("UI", 1)
 local WoW = LibStub("WoW")
 
@@ -58,10 +60,12 @@ button2:SetPushedTexture(ptex)
 button2:RegisterForClicks("AnyDown")
 
 function start()
-	if not WoW.GetTank() then
-		button2:Disable()
-	else
-		button2:Enable()
+	if not WoW.IsInArena() then
+		if not WoW.GetTank() then
+			button2:Disable()
+		else
+			button2:Enable()
+		end
 	end
 end
 
@@ -87,6 +91,29 @@ button2:SetScript("OnClick", Click2)
 function UI.UpdateText(text)
 	button:SetText(text)
 end
+
+function eventHandler(self, event, ...)
+	if event == "LFG_PROPOSAL_SHOW" then 
+		WoW.Log("LFG Triggered")
+		if GetLFGProposal() then
+			AcceptProposal()
+		end
+	end
+	if event == "GROUP_ROSTER_UPDATE" or event == "GROUP_JOINED" then	
+		if not WoW.IsInArena() then
+			if not WoW.GetTank() then
+				button2:Disable()
+			else
+				button2:Enable()
+			end
+		end
+	end	
+end
+
+parent:RegisterEvent("LFG_PROPOSAL_SHOW")
+parent:RegisterEvent("GROUP_ROSTER_UPDATE")
+parent:RegisterEvent("GROUP_JOINED")
+parent:SetScript("OnEvent", eventHandler)
 
 start()
 
