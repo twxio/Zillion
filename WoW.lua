@@ -173,16 +173,12 @@ end
 
 function WoW.GetTank()
 	local groupType = IsInRaid() and "raid" or "party";
-	for i=1, GetNumGroupMembers() do
-		if groupType == "party" then      
-			Unit = (groupType .. i)    
-			Role=UnitGroupRolesAssigned(Unit)
-			WoW.Log('Group Type: ' .. groupType)
-			WoW.Log('Role: ' .. Role)
-			if Role == "TANK" then
-				return Unit
-			end
-		end
+	for i=1, GetNumGroupMembers() do		
+		Unit = (groupType .. i)    
+		Role=UnitGroupRolesAssigned(Unit)			
+		if Role == "TANK" then
+			return Unit
+		end		
 	end
 end
 
@@ -342,10 +338,10 @@ function WoW.GetHealth(unit)
   return currentHealth
 end
 
-local dtLog = date("%H-%M-%S");			
 local LogFile = ""
 if IsHackEnabled then
-	LogFile = GetWoWDirectory() .. "\\" .. "Interface" .. "\\" ..  "Addons" .. "\\" .. "Zillion" .. "\\Logs\\" .. dtLog .."-log.txt"
+	LogFile = GetWoWDirectory() .. "\\" .. "Interface" .. "\\" ..  "Addons" .. "\\" .. "Zillion" .. "\\Logs\\log.txt"	
+	WriteFile(LogFile, "Log\n", false)
 end
 	
 function WoW.Log(message, color)
