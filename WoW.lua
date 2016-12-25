@@ -223,6 +223,10 @@ function WoW.GetArenaDPSsTarget()
 	end
 end
 
+function WoW.IsInArena()
+	return select(2,IsInInstance()) == "arena"
+end
+
 function WoW.GetArenaDPSsTarget()	
 	local groupType = "arena"
 	for i=1, GetNumGroupMembers() do		

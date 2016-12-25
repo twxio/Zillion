@@ -102,9 +102,12 @@ function Pulse()
 	end
 	
 	-- Arena Specific Stuff
-	tar = WoW.GetArenaDPSsTarget()
-	if tar ~= nil then
-		TargetUnit(tar)
+	
+	if WoW.IsInArena() then
+		tar = WoW.GetArenaDPSsTarget()
+		if tar ~= nil then
+			TargetUnit(tar)
+		end
 	end
 	
 	if UnitMovementFlags("Player") ~= 0 and WoW.InCombat() then
