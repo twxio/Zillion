@@ -12,7 +12,7 @@ local classColor
 
 function start()	
 	classColor = WoW.ClassColors[select(3,UnitClass("player"))]
-	parent.t:SetColorTexture(classColor.R, classColor.G, classColor.B, 1)	
+	--parent.t:SetColorTexture(classColor.R, classColor.G, classColor.B, 1)	
 	LibDraw.Enable(0.005)	
 	WoW.Log('Rotation Ready.')
 end
@@ -32,8 +32,8 @@ LibDraw.Sync(function()
 	if UnitExists("Target") and not UnitIsDeadOrGhost("Target") then			
 		local _,  _,  pZ = ObjectPosition("player")
 		local dist = GetDistanceBetweenObjects("player", "target")		
-		local pX,  pY,  _ = GetPositionBetweenObjects("target", "player", dist - 2)
-		local tX,  tY,  tZ = ObjectPosition("target")
+		local pX,  pY, _ = GetPositionBetweenObjects("target", "player", dist - 2)
+		local tX,  tY, tZ = ObjectPosition("target")
 		LibDraw.SetColorRaw(classColor.R, classColor.G, classColor.B, 1)	
 		LibDraw.Line(pX, pY, pZ, tX, tY, tZ)		
 		LibDraw.Circle(tX, tY, tZ, 8);	
