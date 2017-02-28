@@ -85,6 +85,10 @@ function start()
 	if englishClass == "MAGE" and currentSpec == 3 then
 		LoadFile("UI.lua")
 		LoadFile("Classes\\Mage\\Frost.lua")
+	end
+	if englishClass == "PALADIN" and currentSpec == 3 then
+		LoadFile("UI.lua")
+		LoadFile("Classes\\Paladin\\Retribution.lua")
 	end	
 	if englishClass == "PRIEST" and currentSpec == 1 then
 		LoadFile("Classes\\Priest\\Disc.lua")
